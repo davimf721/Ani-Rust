@@ -1,6 +1,7 @@
 # AniRust
+![image](https://github.com/user-attachments/assets/cf959020-8933-4fc6-b161-3731494c08e8)
 
-AniRust é um programa de linha de comando em Rust para buscar e reproduzir animes, similar ao ani-cli, mas com funcionalidades adicionais.
+AniRust é um programa de linha de comando em Rust para buscar e reproduzir animes.
 
 ## Funcionalidades
 
@@ -47,7 +48,7 @@ cargo install --path .
 
 ```bash
 # Busque um anime pelo nome
-anirust search "nome do anime"
+anirustx
 ```
 
 O programa irá:
