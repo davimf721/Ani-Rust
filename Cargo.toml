@@ -1,0 +1,22 @@
+[package]
+name = "anirust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap            = { version = "4.5", features = ["derive"] }   # CLI parsing :contentReference[oaicite:4]{index=4}
+tokio           = { version = "1.44", features = ["full"] }   # Async runtime :contentReference[oaicite:5]{index=5}
+rust-anilist    = "0.1"                                       # AniList API client :contentReference[oaicite:6]{index=6}
+dialoguer       = "0.11"                                      # Menus interativos :contentReference[oaicite:7]{index=7}
+anyhow          = "1.0"                                       # Tratamento de erros
+serde           = { version = "1.0", features = ["derive"] } # (Des)serialização JSON
+serde_json      = "1.0" 
+reqwest = "0.12.15"
+scraper = "0.23.1"
+directories = "6.0.0"
+regex = "1.11.1"
+dirs = "5.0"
+indicatif = "0.17.11"
+async-trait = "0.1.88"
+futures = "0.3.31"
+url = "2.5.4"
