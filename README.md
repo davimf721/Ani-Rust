@@ -48,7 +48,7 @@ cargo install --path .
 
 ```bash
 # Busque um anime pelo nome
-anirust search "nome do anime"
+anirustx
 ```
 
 O programa irá:
