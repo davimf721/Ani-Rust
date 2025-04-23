@@ -16,7 +16,7 @@ use player::play_with_mpv;
 use ui::select_from_list;
 
 #[derive(Parser)]
-#[command(name = "ani-rust", version, about = "Anime CLI em Rust")]
+#[command(name = "anirust", version, about = "Anime CLI em Rust")]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
