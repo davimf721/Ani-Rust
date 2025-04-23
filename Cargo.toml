@@ -11,7 +11,7 @@ dialoguer       = "0.11"                                      # Menus interativo
 anyhow          = "1.0"                                       # Tratamento de erros
 serde           = { version = "1.0", features = ["derive"] } # (Des)serialização JSON
 serde_json      = "1.0" 
-reqwest = "0.12.15"
+reqwest = { version = "0.12.15", features = ["json"] }
 scraper = "0.23.1"
 directories = "6.0.0"
 regex = "1.11.1"

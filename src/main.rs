@@ -124,7 +124,7 @@ async fn main() -> Result<()> {
     println!("Selected: {}", selected_anime.title);
     
     // Get episodes
-    let episodes = get_anime_episodes(&selected_anime.id, mode).await?;
+    let episodes = get_anime_episodes(selected_anime.mal_id).await?;
     
     if episodes.is_empty() {
         return Err(anyhow!("No episodes found for: {}", selected_anime.title));
@@ -141,7 +141,7 @@ async fn main() -> Result<()> {
         },
         None => {
             let episode_titles: Vec<String> = episodes.iter()
-                .map(|ep| format!("Episode {}", ep.number))
+                .map(|ep| format!("Episode {}", ep.url))
                 .collect();
             
             select_from_list(&episode_titles, "Select episode:")?
@@ -149,10 +149,10 @@ async fn main() -> Result<()> {
     };
     
     let selected_episode = &episodes[episode_index];
-    println!("Selected: Episode {}", selected_episode.number);
+    println!("Selected: Episode {}", selected_episode.url);
     
     // Get video URL
-    let video_url = get_episode_url(&selected_anime.id, &selected_episode.number, mode, &quality).await?;
+    let video_url = get_episode_url(&selected_anime.mal_id.to_string(), &selected_episode.url, mode, &quality).await?;
     println!("Video URL: {}", video_url);
     
     // Play or download

@@ -11,9 +11,10 @@ pub struct VideoLink {
 }
 
 // Constantes para a API
-const ALLANIME_API: &str = "https://api.allanime.day";
+const ANIMEFIRE_BASE: &str = "https://animefire.plus";
 const ALLANIME_REFR: &str = "https://allanime.day";
 const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
+
 
 // Função para obter a URL do episódio
 pub async fn get_episode_url(anime_id: &str, episode_number: &str, mode: &str, quality: &str) -> Result<String> {
@@ -107,7 +108,7 @@ async fn get_episode_embed_links(anime_id: &str, episode_number: &str, mode: &st
         "variables": variables
     });
     
-    let response_text = client.post(format!("{}/api", ALLANIME_API))
+    let response_text = client.post(format!("{}/api", ANIMEFIRE_BASE))
         .header("Referer", ALLANIME_REFR)
         .header("Content-Type", "application/json")
         .body(serde_json::to_string(&body)?)
