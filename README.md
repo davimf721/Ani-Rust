@@ -5,8 +5,8 @@ AniRust é um programa de linha de comando em Rust para buscar e reproduzir anim
 
 ## Funcionalidades
 
-- Busca de animes usando a API do AniList
-- Busca automática de fontes de streaming do AnimeFirePlus
+- Busca de animes
+- Busca automática de fontes de streaming do GoGoAnime
 - Histórico de visualização para lembrar onde você parou
 - Reprodução de vídeos usando o MPV
 
@@ -47,36 +47,19 @@ cargo install --path .
 ### Buscar e assistir um anime
 
 ```bash
-# Busque um anime pelo nome
-anirustx
+# Digite o nome do programa
+anirust
+# Depois escreva o nome do anime
+Digite o nome do anime: Naruto
 ```
 
 O programa irá:
-1. Buscar animes correspondentes na API do AniList
+1. Buscar animes correspondentes.
 2. Mostrar uma lista de resultados para você escolher
 3. Mostrar uma lista de episódios disponíveis
-4. Buscar automaticamente o episódio no AnimeFirePlus
+4. Buscar automaticamente o episódio no GoGo
 5. Extrair a URL de streaming e reproduzir o vídeo com o MPV
 6. Salvar seu progresso no histórico de visualização
-
-### Continuar assistindo de onde parou
-
-```bash
-# Continue assistindo o último anime que você estava assistindo
-anirust continue
-```
-
-O programa irá:
-1. Verificar seu histórico de visualização
-2. Identificar o último anime que você assistiu
-3. Carregar o próximo episódio (ou o mesmo episódio se você já assistiu o último)
-4. Buscar automaticamente o episódio no AnimeFirePlus
-5. Extrair a URL de streaming e reproduzir o vídeo com o MPV
-6. Atualizar seu progresso no histórico de visualização
-
-## Arquivos e Diretórios
-
-- `~/.config/anirust/history.json`: Arquivo de histórico de visualização
 
 ## Solução de Problemas
 
@@ -95,10 +78,6 @@ Certifique-se de que o yt-dlp está instalado e disponível no seu PATH:
 ```bash
 pip install yt-dlp
 ```
-
-### O programa não encontra um anime no AnimeFirePlus
-
-O AnimeFirePlus pode ter um nome diferente para o anime. Tente buscar manualmente no site e verificar o nome correto.
 
 ## Contribuição
 
