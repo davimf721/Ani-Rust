@@ -1,133 +1,106 @@
-use anyhow::{anyhow, Result};
-use serde::{Deserialize, Serialize};
-use reqwest::{header, Client};
+use anyhow::{Result, anyhow};
+use reqwest::Client;
+use serde::Deserialize;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Anime {
-    pub mal_id: u32,
-    pub image: Option<String>,
+const BASE_URL: &str = "https://api.consumet.org";
+
+#[derive(Debug, Deserialize)]
+pub struct AnimeItem {
+    pub id: String,
     pub title: String,
-    pub episodes: Option<u32>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Episode {
-    pub mal_id: u32,
+#[derive(Debug, Deserialize)]
+struct SearchResponse {
+    results: Vec<AnimeItem>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EpisodeItem {
+    pub id: String,
+    pub number: String,
     pub title: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct InfoResponse {
+    episodes: Vec<EpisodeItem>,
+}
+
+#[derive(Debug, Deserialize)]
+struct WatchResponse {
+    sources: Vec<Source>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Source {
     pub url: String,
+    pub quality: String,
 }
 
-const JIKAN_API: &str = "https://api.jikan.moe/v4";
-const USER_AGENT: &str = "MyAniRustClient/1.0 (https://github.com/seu-usuario)";
-
-// Configuração da API Jikan
-struct JikanConfig {
-    client: Client,
-}
-
-impl JikanConfig {
-    fn new() -> Result<Self> {
-        let mut headers = header::HeaderMap::new();
-        headers.insert("User-Agent", header::HeaderValue::from_static(USER_AGENT));
-        
-        Ok(Self {
-            client: Client::builder()
-                .default_headers(headers)
-                .build()?,
-        })
-    }
-}
-
-// Função para buscar animes
-pub async fn search_anime(query: &str) -> Result<Vec<Anime>> {
-    let client = Client::builder()
-        .user_agent(USER_AGENT)
-        .build()?;
-    
-    let response = client
-        .get(format!("{}/anime", JIKAN_API))
-        .query(&[("q", query)])
+/// Busca animes via Consumet Meta API (Gogoanime)
+pub async fn search_anime(query: &str) -> Result<Vec<AnimeItem>> {
+    let url = format!("{}/anime/gogoanime/{}?page=1", BASE_URL, query);
+    let resp = Client::new()
+        .get(&url)
         .send()
-        .await?
-        .json::<JikanResponse<Vec<JikanAnime>>>()
         .await?;
 
-    let results: Vec<Anime> = response.data
-        .into_iter()
-        .map(|anime| Anime {
-            mal_id: anime.mal_id,
-            title: anime.title,
-            image: anime.images.jpg.image_url,
-            episodes: anime.episodes,
-        })
-        .collect();
-
-    if results.is_empty() {
-        return Err(anyhow!("No anime found for query: {}", query));
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        anyhow::bail!("HTTP {}: {}", status, body);
     }
-    
-    Ok(results)
+
+    let body = resp.text().await?;
+    let search: SearchResponse = serde_json::from_str(&body)?;
+    if search.results.is_empty() {
+        anyhow::bail!("Nenhum anime encontrado para: \"{}\"", query);
+    }
+    Ok(search.results)
 }
 
-// Função para obter episódios
-pub async fn get_anime_episodes(anime_id: u32) -> Result<Vec<Episode>> {
-    let client = Client::builder()
-        .user_agent(USER_AGENT)
-        .build()?;
-
-    let response = client
-        .get(format!("{}/anime/{}/episodes", JIKAN_API, anime_id))
+/// Obtém lista de episódios para um anime específico
+ pub async fn get_episodes(anime_id: &str) -> Result<Vec<EpisodeItem>> {
+    let url = format!("{}/anime/gogoanime/info/{}", BASE_URL, anime_id);
+    let resp = Client::new()
+        .get(&url)
         .send()
-        .await?
-        .json::<JikanResponse<Vec<JikanEpisode>>>() // Desserialização direta
         .await?;
 
-    let episodes: Vec<Episode> = response.data
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        anyhow::bail!("HTTP {}: {}", status, body);
+    }
+
+    let body = resp.text().await?;
+    let info: InfoResponse = serde_json::from_str(&body)?;
+    if info.episodes.is_empty() {
+        anyhow::bail!("Nenhum episódio encontrado para anime id: {}", anime_id);
+    }
+    Ok(info.episodes)
+}
+
+/// Obtém o melhor link de streaming para um episódio específico
+pub async fn get_stream_url(episode_id: &str) -> Result<String> {
+    let url = format!("{}/anime/gogoanime/watch/{}", BASE_URL, episode_id);
+    let resp = Client::new()
+        .get(&url)
+        .send()
+        .await?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        anyhow::bail!("HTTP {}: {}", status, body);
+    }
+
+    let body = resp.text().await?;
+    let watch: WatchResponse = serde_json::from_str(&body)?;
+    let best = watch.sources
         .into_iter()
-        .map(|ep| Episode {
-            url: ep.url,
-            title: ep.title,
-            mal_id: ep.mal_id,
-        })
-        .collect();
-
-    Ok(episodes)
-}
-
-// Estruturas para desserialização da API Jikan
-#[derive(Debug, Deserialize)]
-struct JikanResponse<T> {
-    data: T,
-    pagination: JikanPagination,
-}
-#[derive(Debug, Deserialize)]
-struct JikanPagination {
-    last_visible_page: u32,
-    has_next_page: bool,
-}
-
-#[derive(Debug, Deserialize)]
-struct JikanAnime {
-    mal_id: u32,
-    images: JikanImages,
-    title: String,
-    episodes: Option<u32>,
-    
-}
-
-#[derive(Debug, Deserialize)]
-struct JikanImages {
-    jpg: JikanImage,
-}
-
-#[derive(Debug, Deserialize)]
-struct JikanImage {
-    image_url: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct JikanEpisode {
-    mal_id: u32,
-    title: Option<String>,
-    url: String,  
+        .max_by_key(|s| s.quality.parse::<u32>().unwrap_or(0))
+        .ok_or_else(|| anyhow!("No sources available"))?;
+    Ok(best.url)
 }
